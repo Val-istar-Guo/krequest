@@ -75,17 +75,6 @@ export interface KeqContext {
   // ===================================================
 
   /**
-   * retry information, undefined is no retry
-   *
-   * @deprecated
-   */
-  retry?: {
-    attempt: number
-    error: unknown | null
-    delay: number
-  }
-
-  /**
    * Fetch API Arguments
    */
   fetchArguments?: [RequestInfo | string, RequestInit]

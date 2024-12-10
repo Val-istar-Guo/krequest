@@ -140,6 +140,26 @@ export class Core<OUTPUT> {
       },
     }
 
+    Object.defineProperty(ctx, 'identifier', {
+      value: this.__identifier__,
+      writable: false,
+    })
+
+    Object.defineProperty(ctx, 'request', {
+      value: requestContext,
+      writable: false,
+    })
+
+    Object.defineProperty(ctx, 'emitter', {
+      value: emitter,
+      writable: false,
+    })
+
+    Object.defineProperty(ctx, 'global', {
+      value: this.__global__,
+      writable: false,
+    })
+
     const middleware = composeMiddleware([...this.__prepend_middlewares__, ...this.__append_middlewares__])
 
 

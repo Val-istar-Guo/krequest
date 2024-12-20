@@ -1,5 +1,4 @@
 function compilePathnameTemplate(template: string, params: Record<string, string | number>): string {
-  console.log('🚀 ~ compilePathnameTemplate ~ template:', template)
   return template
     .replace(/(^|\/)(?::([^/]+)|{([^/]+)}|%7B([^/]+)%7D)(?=$|\/)/g, (_, prefix, group1, group2, group3) => {
       if (group1 && params[group1]) {

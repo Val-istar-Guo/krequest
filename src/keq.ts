@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import qs from 'qs'
 import { Core } from './core.js'
 import { Exception } from './exception/exception.js'
 import { InvalidArgumentsExceptions } from './exception/invalid-arguments.exception.js'
@@ -17,7 +18,6 @@ import { fixContentType } from './util/fix-content-type.js'
 import type { KeqRetryOn, KeqRetryDelay } from './types/keq-retry.js'
 import type { KeqMiddleware } from './types/keq-middleware.js'
 import type { KeqOptionsParameter, KeqOptionsReturnType } from './types/keq-options.js'
-import type { KeqQueryValue } from './types/keq-query-value.js'
 import type { KeqResolveMethod } from './types/keq-resolve-with-mode.js'
 import type { CommonContentType, ShorthandContentType } from './types/content-type.js'
 import type { KeqContextOptions } from './types/keq-context.js'
@@ -26,6 +26,8 @@ import type { KeqContextRequestBody } from './types/keq-context-request.js'
 import { isValidHeaderValue } from './util/is-valid-header-value.js'
 import { isReadableStream } from './is/is-readable-stream.js'
 import { isArrayBuffer } from './is/is-array-buffer.js'
+import { isObject } from './is/is-object.js'
+import { KeqQueryObject, KeqQueryValue } from './types/keq-query-value.js'
 
 
 /**
@@ -97,30 +99,26 @@ export class Keq<
    */
   query<K extends 'strict'>(key: OPERATION['requestQuery']): this
   query<K extends 'strict', T extends keyof OPERATION['requestQuery']>(key: T, value: OPERATION['requestQuery'][T]): this
-  query(key: Record<string, KeqQueryValue | KeqQueryValue[]>): this
-  query(key: string, value: KeqQueryValue | KeqQueryValue[]): this
-  query(key: string | OPERATION['requestQuery'] | Record<string, KeqQueryValue | KeqQueryValue[]>, value?: KeqQueryValue | KeqQueryValue[]): this {
-    if (typeof key === 'object') {
-      for (const [k, v] of Object.entries(key)) {
-        if (v === undefined) continue
-        this.query(k, v)
+  query(key: KeqQueryObject): this
+  query(key: string, value: KeqQueryValue): this
+  query(key: string | OPERATION['requestQuery'] | KeqQueryObject, value?: KeqQueryValue): this {
+    if (isObject(key)) {
+      const obj = qs.parse(
+        qs.stringify(key, { encode: false, arrayFormat: 'brackets' }),
+        { depth: 0 },
+      ) as Record<string, string>
+
+      for (const [k, v] of Object.entries(obj)) {
+        for (const item of Array.isArray(v) ? v : [v]) {
+          this.requestContext.url.searchParams.append(k, item)
+        }
       }
+
       return this
     }
 
     if (typeof key === 'string') {
-      if (Array.isArray(value)) {
-        for (const item of value) {
-          this.query(key, item)
-        }
-      } else if (typeof value === 'string' || typeof value === 'number' || typeof value === 'bigint') {
-        this.requestContext.url.searchParams.append(key, String(value))
-      } else if (value === 'undefined' || value === null || value === undefined) {
-        // skip
-      } else {
-        console.warn(`query value type(${typeof value}) is invalid, key: ${key}`)
-      }
-
+      this.query({ [key]: value })
       return this
     }
 

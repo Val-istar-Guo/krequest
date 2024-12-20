@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { ExtractProperty } from './extract-property.js'
 import { KeqContextRequestMethod } from './keq-context-request.js'
+import { KeqQueryObject } from './keq-query-value.js'
 
 export interface KeqOperation {
 
@@ -8,9 +9,7 @@ export interface KeqOperation {
     [key: string]: string | number
   }
 
-  requestQuery: {
-    [key: string]: string | string[] | number
-  }
+  requestQuery: KeqQueryObject
 
   requestHeaders: {
     [key: string]: string | number
@@ -46,9 +45,7 @@ export interface KeqBaseOperation extends KeqOperation {
     [key: string]: string
   }
 
-  requestQuery: {
-    [key: string]: string | string[]
-  }
+  requestQuery: KeqQueryObject
 
   requestHeaders: {
     'content-type': string
